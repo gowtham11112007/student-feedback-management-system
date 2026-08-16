@@ -174,13 +174,16 @@ def health_check():
 @app.route('/api/login', methods=['POST'])
 def login():
     data = request.get_json() or {}
-    username = data.get('username')
-    password = data.get('password')
+    username = (data.get('username') or '').strip()
+    password = (data.get('password') or '').strip()
+
+    expected_username = os.environ.get('ADMIN_USERNAME', 'admin').strip()
+    expected_password = os.environ.get('ADMIN_PASSWORD', 'AcademiaAdmin2026!').strip()
 
     if not username or not password:
         return jsonify({'error': 'Username and password are required'}), 400
 
-    if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
+    if username == expected_username and password == expected_password:
         expiration = datetime.utcnow() + timedelta(hours=24)
         token = jwt.encode(
             {
