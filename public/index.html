@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Feedback Portal | Academic System</title>
+  <meta name="description" content="Submit your valuable feedback regarding teaching, course curriculum, and campus facilities.">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="container nav-container">
+      <a href="index.html" class="brand">
+        <div class="brand-logo">SF</div>
+        <div class="brand-text">
+          <h1>AcademiaFeedback</h1>
+          <p>Student Feedback Management System</p>
+        </div>
+      </a>
+      <div class="nav-links">
+        <a href="index.html" class="nav-link active">Submit Feedback</a>
+        <a href="admin.html" class="btn btn-outline btn-sm">Admin Portal</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="container">
+      
+      <!-- Hero Section -->
+      <section class="hero-section">
+        <span class="hero-tag">Voice Your Opinion</span>
+        <h1 class="hero-title">Student Feedback Form</h1>
+        <p class="hero-subtitle">
+          Your insights shape the future of our academic community. Please share your honest experience regarding teaching quality, facilities, or curriculum.
+        </p>
+      </section>
+
+      <!-- Feedback Form Card -->
+      <div class="card" style="max-width: 800px; margin: 0 auto;">
+        <div class="card-header">
+          <h2 class="card-title">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            Feedback Submission
+          </h2>
+          <p class="card-subtitle">All fields marked with <span class="required">*</span> are required.</p>
+        </div>
+
+        <form id="feedbackForm" novalidate>
+          <div class="form-grid">
+            
+            <!-- Student Name -->
+            <div class="form-group" id="group-student_name">
+              <label for="student_name" class="form-label">Student Full Name <span class="required">*</span></label>
+              <input type="text" id="student_name" name="student_name" class="form-control" placeholder="e.g. Jane Doe" required>
+              <span class="error-message">Please enter your full name.</span>
+            </div>
+
+            <!-- Roll Number -->
+            <div class="form-group" id="group-roll_number">
+              <label for="roll_number" class="form-label">Roll Number / Student ID <span class="required">*</span></label>
+              <input type="text" id="roll_number" name="roll_number" class="form-control" placeholder="e.g. CS2026045" required>
+              <span class="error-message">Please enter your roll number or student ID.</span>
+            </div>
+
+            <!-- Department -->
+            <div class="form-group" id="group-department">
+              <label for="department" class="form-label">Department <span class="required">*</span></label>
+              <select id="department" name="department" class="form-control" required>
+                <option value="" disabled selected>Select Department</option>
+                <option value="Computer Science">Computer Science & Engineering</option>
+                <option value="Electrical Engineering">Electrical & Electronics Engineering</option>
+                <option value="Mechanical Engineering">Mechanical Engineering</option>
+                <option value="Civil Engineering">Civil Engineering</option>
+                <option value="Business Administration">Business Administration</option>
+                <option value="Humanities & Sciences">Humanities & Basic Sciences</option>
+                <option value="Other">Other Department</option>
+              </select>
+              <span class="error-message">Please select your department.</span>
+            </div>
+
+            <!-- Course / Subject -->
+            <div class="form-group" id="group-course_name">
+              <label for="course_name" class="form-label">Course / Subject <span class="required">*</span></label>
+              <input type="text" id="course_name" name="course_name" class="form-control" placeholder="e.g. Data Structures & Algorithms" required>
+              <span class="error-message">Please specify the course or subject name.</span>
+            </div>
+
+            <!-- Feedback Type -->
+            <div class="form-group" id="group-feedback_type">
+              <label for="feedback_type" class="form-label">Feedback Category <span class="required">*</span></label>
+              <select id="feedback_type" name="feedback_type" class="form-control" required>
+                <option value="" disabled selected>Select Category</option>
+                <option value="Teaching">Teaching Quality & Methodology</option>
+                <option value="Facilities">Campus & Lab Facilities</option>
+                <option value="Curriculum">Curriculum & Course Content</option>
+                <option value="Other">Other / General Remarks</option>
+              </select>
+              <span class="error-message">Please select a feedback category.</span>
+            </div>
+
+            <!-- Submission Date (Auto-filled) -->
+            <div class="form-group">
+              <label class="form-label">Submission Date</label>
+              <input type="text" id="submission_date_display" class="form-control" readonly disabled style="background-color: var(--bg-surface); cursor: not-allowed;">
+            </div>
+
+            <!-- Rating (Interactive Star Rating) -->
+            <div class="form-group full-width" id="group-rating">
+              <label class="form-label">Overall Rating <span class="required">*</span></label>
+              <div class="rating-container">
+                <div class="star-rating" id="starRating">
+                  <span class="star" data-value="1" title="1 Star - Poor">★</span>
+                  <span class="star" data-value="2" title="2 Stars - Below Average">★</span>
+                  <span class="star" data-value="3" title="3 Stars - Average">★</span>
+                  <span class="star" data-value="4" title="4 Stars - Very Good">★</span>
+                  <span class="star" data-value="5" title="5 Stars - Excellent">★</span>
+                </div>
+                <input type="hidden" id="rating" name="rating" value="">
+                <div class="rating-text" id="ratingText">Click stars to rate (1 to 5)</div>
+              </div>
+              <span class="error-message" id="rating-error">Please select a rating between 1 and 5 stars.</span>
+            </div>
+
+            <!-- Feedback Message -->
+            <div class="form-group full-width" id="group-message">
+              <label for="message" class="form-label">Feedback Details / Comments <span class="required">*</span></label>
+              <textarea id="message" name="message" class="form-control" placeholder="Share your detailed feedback, constructive criticism, or specific suggestions..." required></textarea>
+              <span class="error-message">Feedback comment must be at least 5 characters.</span>
+            </div>
+
+          </div>
+
+          <div style="margin-top: 30px; display: flex; justify-content: flex-end;">
+            <button type="submit" id="submitBtn" class="btn btn-primary" style="min-width: 180px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+              Submit Feedback
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <!-- Success Confirmation Modal -->
+  <div class="modal-backdrop" id="successModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title" style="color: var(--success); display: flex; align-items: center; gap: 8px;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+          Feedback Received!
+        </h3>
+        <button class="modal-close" onclick="closeSuccessModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="margin-bottom: 16px;">Thank you for taking the time to share your feedback. Your submission has been successfully logged.</p>
+        
+        <div style="background: var(--bg-surface); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border-color); font-size: 0.9rem;">
+          <div style="margin-bottom: 6px;"><strong>Student:</strong> <span id="summaryName"></span> (<span id="summaryRoll"></span>)</div>
+          <div style="margin-bottom: 6px;"><strong>Department:</strong> <span id="summaryDept"></span></div>
+          <div style="margin-bottom: 6px;"><strong>Category:</strong> <span id="summaryType"></span></div>
+          <div><strong>Rating:</strong> <span id="summaryRating" style="color: var(--star-gold); font-weight: bold;"></span></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="closeSuccessModal()">Submit Another Feedback</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <p>&copy; 2026 AcademiaFeedback - Student Feedback Management System. Built with Flask & Vanilla Web Technologies.</p>
+    </div>
+  </footer>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
