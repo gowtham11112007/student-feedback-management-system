@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard | AcademiaFeedback</title>
-  <meta name="description" content="Admin dashboard to search, filter, analyze, and manage student feedback.">
+  <title>Admin Intelligence Dashboard | AcademiaFeedback</title>
+  <meta name="description" content="Admin feedback intelligence dashboard with sentiment breakdown, rating charts, CSV export, and resolution tracking.">
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -16,14 +16,13 @@
         <div class="brand-logo" style="background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);">AD</div>
         <div class="brand-text">
           <h1>AcademiaFeedback</h1>
-          <p>Admin Control Panel</p>
+          <p>Admin Intelligence Dashboard</p>
         </div>
       </a>
       <div class="nav-links">
+        <button id="themeToggleBtn" class="theme-toggle-btn" title="Toggle Dark/Light Mode" onclick="toggleTheme()">🌙</button>
         <a href="index.html" class="nav-link">Public Form</a>
-        <div id="authNavSection" style="display: flex; align-items: center; gap: 12px;">
-          <!-- Populated by JS: User status & Logout button -->
-        </div>
+        <div id="authNavSection" style="display: flex; align-items: center; gap: 12px;"></div>
       </div>
     </div>
   </nav>
@@ -35,13 +34,19 @@
       <!-- Top Title & Action Bar -->
       <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 16px;">
         <div>
-          <h1 style="font-size: 1.8rem; font-weight: 800; color: var(--secondary);">Feedback Overview & Analytics</h1>
-          <p style="color: var(--text-muted); font-size: 0.9rem;">Manage, filter, and review submitted student responses in real-time.</p>
+          <h1 style="font-size: 1.8rem; font-weight: 800; color: var(--secondary);">Academic Feedback Intelligence</h1>
+          <p style="color: var(--text-muted); font-size: 0.9rem;">Real-time sentiment insights, department scorecards, and resolution tracking.</p>
         </div>
-        <div style="display: flex; gap: 12px;">
-          <button id="refreshBtn" class="btn btn-secondary" onclick="loadDashboardData()">
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <button class="btn btn-secondary" onclick="exportCSV()">
+            📥 Export CSV
+          </button>
+          <button class="btn btn-secondary" onclick="printExecutiveReport()">
+            📄 Executive Report
+          </button>
+          <button id="refreshBtn" class="btn btn-primary" onclick="loadDashboardData()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
-            Refresh Data
+            Refresh
           </button>
         </div>
       </div>
@@ -80,21 +85,21 @@
 
         <div class="stat-card">
           <div class="stat-info">
-            <h3>Reviewed</h3>
-            <div class="stat-value" id="statReviewedCount">--</div>
+            <h3>Positive Sentiment</h3>
+            <div class="stat-value" id="statPositivePct">--</div>
           </div>
           <div class="stat-icon icon-green">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>
           </div>
         </div>
       </div>
 
-      <!-- Analytics Breakdown Cards -->
+      <!-- Visual Analytics & Charts -->
       <div class="analytics-grid">
-        <!-- Department Performance -->
+        <!-- Department Scorecards & Volume -->
         <div class="analytics-card">
           <div class="analytics-title">
-            <span>Department Averages & Volume</span>
+            <span>Department Scorecards & Ratings</span>
             <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 500;">Scale 1-5 Stars</span>
           </div>
           <div class="progress-list" id="departmentStatsContainer">
@@ -102,19 +107,19 @@
           </div>
         </div>
 
-        <!-- Feedback Categories Breakdown -->
+        <!-- Rating Breakdown Bar Chart -->
         <div class="analytics-card">
           <div class="analytics-title">
-            <span>Feedback by Category</span>
-            <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 500;">Distribution</span>
+            <span>Satisfaction Rating Distribution</span>
+            <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 500;">Star Breakdown</span>
           </div>
-          <div class="badge-cloud" id="categoryStatsContainer" style="margin-top: 10px;">
-            <p style="color: var(--text-muted); font-size: 0.85rem;">Loading category breakdown...</p>
+          <div class="chart-bar-container" id="ratingChartContainer">
+            <p style="color: var(--text-muted); font-size: 0.85rem;">Loading rating chart...</p>
           </div>
         </div>
       </div>
 
-      <!-- Search & Filters Control Bar -->
+      <!-- Search & Filters Bar -->
       <div class="filter-card">
         <div class="filter-grid">
           
@@ -148,24 +153,23 @@
             </select>
           </div>
 
-          <!-- Rating filter -->
+          <!-- Sentiment filter -->
           <div>
-            <select id="filterRating" class="form-control" onchange="applyFilters()">
-              <option value="all">All Ratings</option>
-              <option value="5">5 Stars (★ 5)</option>
-              <option value="4">4 Stars (★ 4)</option>
-              <option value="3">3 Stars (★ 3)</option>
-              <option value="2">2 Stars (★ 2)</option>
-              <option value="1">1 Star (★ 1)</option>
+            <select id="filterSentiment" class="form-control" onchange="applyFilters()">
+              <option value="all">All Sentiments</option>
+              <option value="Positive">Positive 😄</option>
+              <option value="Neutral">Neutral 😐</option>
+              <option value="Negative">Negative 🙁</option>
             </select>
           </div>
 
-          <!-- Status filter -->
+          <!-- Priority filter -->
           <div>
-            <select id="filterStatus" class="form-control" onchange="applyFilters()">
-              <option value="all">All Statuses</option>
-              <option value="Pending">Pending Review</option>
-              <option value="Reviewed">Reviewed</option>
+            <select id="filterPriority" class="form-control" onchange="applyFilters()">
+              <option value="all">All Priorities</option>
+              <option value="High">High Priority 🚨</option>
+              <option value="Medium">Medium Priority ⚠️</option>
+              <option value="Low">Low Priority ℹ️</option>
             </select>
           </div>
 
@@ -176,10 +180,23 @@
               <option value="created_at_asc">Oldest First</option>
               <option value="rating_desc">Highest Rating</option>
               <option value="rating_asc">Lowest Rating</option>
+              <option value="priority_desc">Priority (High to Low)</option>
               <option value="student_name_asc">Student Name (A-Z)</option>
             </select>
           </div>
 
+        </div>
+      </div>
+
+      <!-- Bulk Actions Bar (Shown when checkboxes selected) -->
+      <div id="bulkBar" class="bulk-bar" style="display: none;">
+        <div style="font-weight: 600; font-size: 0.9rem; color: var(--primary);">
+          <span id="selectedCount">0</span> items selected
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <button class="btn btn-secondary btn-sm" onclick="executeBulkAction('mark_reviewed')">Mark Selected Reviewed</button>
+          <button class="btn btn-secondary btn-sm" onclick="executeBulkAction('mark_pending')">Mark Selected Pending</button>
+          <button class="btn btn-danger btn-sm" onclick="executeBulkAction('delete')">Delete Selected</button>
         </div>
       </div>
 
@@ -195,19 +212,23 @@
           <table class="data-table">
             <thead>
               <tr>
+                <th style="width: 40px; text-align: center;">
+                  <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)">
+                </th>
                 <th>ID</th>
                 <th>Student Info</th>
                 <th>Dept & Subject</th>
                 <th>Category</th>
                 <th>Rating</th>
+                <th>Sentiment</th>
+                <th>Priority</th>
                 <th>Status</th>
-                <th>Date</th>
                 <th style="text-align: right;">Actions</th>
               </tr>
             </thead>
             <tbody id="feedbackTableBody">
               <tr>
-                <td colspan="8" class="empty-state">
+                <td colspan="10" class="empty-state">
                   <div class="empty-state-icon">📋</div>
                   <p>Loading feedback records...</p>
                 </td>
@@ -231,7 +252,7 @@
       </div>
       <div class="modal-body">
         <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">
-          Please sign in with your administrative credentials to access feedback analytics and management tools.
+          Please sign in with your administrative credentials to access feedback analytics and resolution tools.
         </p>
 
         <form id="loginForm" novalidate>
@@ -258,29 +279,25 @@
     </div>
   </div>
 
-  <!-- Feedback Detail Modal -->
+  <!-- Feedback Detail & Resolution Modal -->
   <div class="modal-backdrop" id="detailModal">
-    <div class="modal-box" style="max-width: 600px;">
+    <div class="modal-box" style="max-width: 620px;">
       <div class="modal-header">
-        <h3 class="modal-title">Feedback Details</h3>
+        <h3 class="modal-title">Feedback Details & Action Log</h3>
         <button class="modal-close" onclick="closeDetailModal()">&times;</button>
       </div>
-      <div class="modal-body" id="detailModalBody">
-        <!-- Filled dynamically by JS -->
-      </div>
-      <div class="modal-footer" id="detailModalFooter">
-        <button class="btn btn-secondary" onclick="closeDetailModal()">Close</button>
-      </div>
+      <div class="modal-body" id="detailModalBody"></div>
+      <div class="modal-footer" id="detailModalFooter"></div>
     </div>
   </div>
 
-  <!-- Toast Notification Container -->
+  <!-- Toast Container -->
   <div class="toast-container" id="toastContainer"></div>
 
   <!-- Footer -->
   <footer class="footer">
     <div class="container">
-      <p>&copy; 2026 AcademiaFeedback - Admin Portal. Restricted Access.</p>
+      <p>&copy; 2026 AcademiaFeedback - Admin Portal. Enterprise Academic Intelligence.</p>
     </div>
   </footer>
 

@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Student Feedback Portal | Academic System</title>
-  <meta name="description" content="Submit your valuable feedback regarding teaching, course curriculum, and campus facilities.">
+  <title>Student Feedback Portal | Academic Intelligence System</title>
+  <meta name="description" content="Submit your valuable feedback regarding teaching, course curriculum, and campus facilities with real-time sentiment analysis.">
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -16,10 +16,12 @@
         <div class="brand-logo">SF</div>
         <div class="brand-text">
           <h1>AcademiaFeedback</h1>
-          <p>Student Feedback Management System</p>
+          <p>Academic Feedback & Intelligence System</p>
         </div>
       </a>
       <div class="nav-links">
+        <!-- Theme Toggle Button -->
+        <button id="themeToggleBtn" class="theme-toggle-btn" title="Toggle Dark/Light Mode" onclick="toggleTheme()">🌙</button>
         <a href="index.html" class="nav-link active">Submit Feedback</a>
         <a href="admin.html" class="btn btn-outline btn-sm">Admin Portal</a>
       </div>
@@ -32,21 +34,21 @@
       
       <!-- Hero Section -->
       <section class="hero-section">
-        <span class="hero-tag">Voice Your Opinion</span>
-        <h1 class="hero-title">Student Feedback Form</h1>
+        <span class="hero-tag">✨ Voice Your Experience</span>
+        <h1 class="hero-title">Student Feedback Portal</h1>
         <p class="hero-subtitle">
-          Your insights shape the future of our academic community. Please share your honest experience regarding teaching quality, facilities, or curriculum.
+          Your insights empower continuous academic excellence. Share your experience on teaching, lab facilities, or curriculum.
         </p>
       </section>
 
       <!-- Feedback Form Card -->
-      <div class="card" style="max-width: 800px; margin: 0 auto;">
+      <div class="card" style="max-width: 820px; margin: 0 auto;">
         <div class="card-header">
           <h2 class="card-title">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
             Feedback Submission
           </h2>
-          <p class="card-subtitle">All fields marked with <span class="required">*</span> are required.</p>
+          <p class="card-subtitle">Fields marked with <span class="required">*</span> are required for submission.</p>
         </div>
 
         <form id="feedbackForm" novalidate>
@@ -102,7 +104,7 @@
               <span class="error-message">Please select a feedback category.</span>
             </div>
 
-            <!-- Submission Date (Auto-filled) -->
+            <!-- Submission Date -->
             <div class="form-group">
               <label class="form-label">Submission Date</label>
               <input type="text" id="submission_date_display" class="form-control" readonly disabled style="background-color: var(--bg-surface); cursor: not-allowed;">
@@ -110,7 +112,7 @@
 
             <!-- Rating (Interactive Star Rating) -->
             <div class="form-group full-width" id="group-rating">
-              <label class="form-label">Overall Rating <span class="required">*</span></label>
+              <label class="form-label">Overall Satisfaction Rating <span class="required">*</span></label>
               <div class="rating-container">
                 <div class="star-rating" id="starRating">
                   <span class="star" data-value="1" title="1 Star - Poor">★</span>
@@ -125,10 +127,30 @@
               <span class="error-message" id="rating-error">Please select a rating between 1 and 5 stars.</span>
             </div>
 
-            <!-- Feedback Message -->
+            <!-- Feedback Message & Live Sentiment Preview -->
             <div class="form-group full-width" id="group-message">
-              <label for="message" class="form-label">Feedback Details / Comments <span class="required">*</span></label>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <label for="message" class="form-label" style="margin-bottom:0;">Feedback Details / Comments <span class="required">*</span></label>
+                <div id="liveSentimentBadge" class="badge-sentiment badge-neutral" style="display: none;">
+                  Sentiment: Neutral 😐
+                </div>
+              </div>
+
               <textarea id="message" name="message" class="form-control" placeholder="Share your detailed feedback, constructive criticism, or specific suggestions..." required></textarea>
+
+              <!-- Quick Topic Hashtags -->
+              <div style="margin-top: 8px;">
+                <span style="font-size: 0.78rem; font-weight: 600; color: var(--text-muted);">Quick Topic Tags:</span>
+                <div class="hashtag-container">
+                  <span class="hashtag-pill" onclick="appendTag('#TeachingMethod')">+ #TeachingMethod</span>
+                  <span class="hashtag-pill" onclick="appendTag('#LabEquipment')">+ #LabEquipment</span>
+                  <span class="hashtag-pill" onclick="appendTag('#CourseSyllabus')">+ #CourseSyllabus</span>
+                  <span class="hashtag-pill" onclick="appendTag('#ExamPrep')">+ #ExamPrep</span>
+                  <span class="hashtag-pill" onclick="appendTag('#Infrastructure')">+ #Infrastructure</span>
+                  <span class="hashtag-pill" onclick="appendTag('#GradingPolicy')">+ #GradingPolicy</span>
+                </div>
+              </div>
+
               <span class="error-message">Feedback comment must be at least 5 characters.</span>
             </div>
 
@@ -156,13 +178,14 @@
         <button class="modal-close" onclick="closeSuccessModal()">&times;</button>
       </div>
       <div class="modal-body">
-        <p style="margin-bottom: 16px;">Thank you for taking the time to share your feedback. Your submission has been successfully logged.</p>
+        <p style="margin-bottom: 16px;">Thank you for taking the time to share your feedback. Your submission has been analyzed and successfully logged into our system.</p>
         
         <div style="background: var(--bg-surface); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border-color); font-size: 0.9rem;">
           <div style="margin-bottom: 6px;"><strong>Student:</strong> <span id="summaryName"></span> (<span id="summaryRoll"></span>)</div>
           <div style="margin-bottom: 6px;"><strong>Department:</strong> <span id="summaryDept"></span></div>
           <div style="margin-bottom: 6px;"><strong>Category:</strong> <span id="summaryType"></span></div>
-          <div><strong>Rating:</strong> <span id="summaryRating" style="color: var(--star-gold); font-weight: bold;"></span></div>
+          <div style="margin-bottom: 6px;"><strong>Rating:</strong> <span id="summaryRating" style="color: var(--star-gold); font-weight: bold;"></span></div>
+          <div><strong>Analyzed Sentiment:</strong> <span id="summarySentiment" class="badge-sentiment badge-positive"></span></div>
         </div>
       </div>
       <div class="modal-footer">
@@ -177,7 +200,7 @@
   <!-- Footer -->
   <footer class="footer">
     <div class="container">
-      <p>&copy; 2026 AcademiaFeedback - Student Feedback Management System. Built with Flask & Vanilla Web Technologies.</p>
+      <p>&copy; 2026 AcademiaFeedback - Academic Feedback Intelligence System. Built with Flask & Vanilla Web Technologies.</p>
     </div>
   </footer>
 

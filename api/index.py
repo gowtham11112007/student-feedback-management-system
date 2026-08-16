@@ -34,6 +34,35 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
+# Sentiment & Priority Analysis Helper Engine
+POSITIVE_WORDS = {'excellent', 'outstanding', 'great', 'explained', 'helpful', 'clear', 'love', 'best', 'fantastic', 'interactive', 'recommend', 'insightful', 'good', 'well', 'thorough', 'organized'}
+NEGATIVE_WORDS = {'poor', 'broken', 'freeze', 'slow', 'late', 'unfair', 'terrible', 'bad', 'issue', 'problem', 'fix', 'recalibration', 'hard', 'difficult', 'confusing', 'delay', 'lack', 'worst'}
+URGENT_WORDS = {'hazard', 'emergency', 'safety', 'cheat', 'harassment', 'broken', 'freeze', 'danger', 'unusable', 'zero'}
+
+def analyze_sentiment_and_priority(text, rating):
+    words = text.lower().split()
+    pos_count = sum(1 for w in words if any(p in w for p in POSITIVE_WORDS))
+    neg_count = sum(1 for w in words if any(n in w for n in NEGATIVE_WORDS))
+    urgent_count = sum(1 for w in words if any(u in w for u in URGENT_WORDS))
+
+    # Determine Sentiment
+    if rating >= 4 and pos_count >= neg_count:
+        sentiment = 'Positive'
+    elif rating <= 2 or neg_count > pos_count:
+        sentiment = 'Negative'
+    else:
+        sentiment = 'Neutral'
+
+    # Determine Priority
+    if rating <= 2 or urgent_count > 0:
+        priority = 'High'
+    elif rating == 3 or neg_count > 0:
+        priority = 'Medium'
+    else:
+        priority = 'Low'
+
+    return sentiment, priority
+
 # Database Models
 class Feedback(db.Model):
     __tablename__ = 'feedback'
@@ -46,7 +75,10 @@ class Feedback(db.Model):
     feedback_type = db.Column(db.String(50), nullable=False)
     rating = db.Column(db.Integer, nullable=False)
     message = db.Column(db.Text, nullable=False)
+    sentiment = db.Column(db.String(20), default='Neutral')
+    priority = db.Column(db.String(20), default='Medium')
     status = db.Column(db.String(20), default='Pending') # 'Pending' or 'Reviewed'
+    resolution_notes = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     def to_dict(self):
@@ -59,7 +91,10 @@ class Feedback(db.Model):
             'feedback_type': self.feedback_type,
             'rating': self.rating,
             'message': self.message,
+            'sentiment': self.sentiment,
+            'priority': self.priority,
             'status': self.status,
+            'resolution_notes': self.resolution_notes or '',
             'created_at': self.created_at.strftime('%Y-%m-%d %H:%M:%S') if self.created_at else None
         }
 
@@ -91,75 +126,35 @@ def admin_required(f):
 # Helper to initialize DB and seed initial sample data if empty
 def seed_sample_data():
     if Feedback.query.count() == 0:
-        sample_entries = [
-            Feedback(
-                student_name="Alex Morgan",
-                roll_number="CS2023001",
-                department="Computer Science",
-                course_name="Data Structures & Algorithms",
-                feedback_type="Teaching",
-                rating=5,
-                message="Professor explained complex graph algorithms with clear visualization and interactive coding examples. Outstanding class!",
-                status="Reviewed",
-                created_at=datetime.utcnow() - timedelta(days=5)
-            ),
-            Feedback(
-                student_name="Sophia Chen",
-                roll_number="ECE2023042",
-                department="Electrical Engineering",
-                course_name="Digital Signal Processing",
-                feedback_type="Facilities",
-                rating=3,
-                message="Lab equipment in room 302 needs recalibration. Oscilloscopes occasionally freeze during signal sampling experiments.",
-                status="Pending",
-                created_at=datetime.utcnow() - timedelta(days=4)
-            ),
-            Feedback(
-                student_name="Marcus Vance",
-                roll_number="ME2023018",
-                department="Mechanical Engineering",
-                course_name="Thermodynamics II",
-                feedback_type="Curriculum",
-                rating=4,
-                message="Syllabus is very comprehensive, but adding a practical project on renewable thermal energy systems would make it even better.",
-                status="Reviewed",
-                created_at=datetime.utcnow() - timedelta(days=3)
-            ),
-            Feedback(
-                student_name="Emma Watson",
-                roll_number="CS2023089",
-                department="Computer Science",
-                course_name="Database Management Systems",
-                feedback_type="Teaching",
-                rating=5,
-                message="Great hands-on SQL workshops! The practical exercises on query optimization were immensely helpful.",
-                status="Pending",
-                created_at=datetime.utcnow() - timedelta(days=2)
-            ),
-            Feedback(
-                student_name="David Miller",
-                roll_number="CE2023005",
-                department="Civil Engineering",
-                course_name="Structural Mechanics",
-                feedback_type="Other",
-                rating=2,
-                message="Course pace was extremely fast before midterms, and slide decks were uploaded very late prior to examinations.",
-                status="Pending",
-                created_at=datetime.utcnow() - timedelta(days=1)
-            ),
-            Feedback(
-                student_name="Priya Patel",
-                roll_number="BUS2023011",
-                department="Business Administration",
-                course_name="Financial Accounting",
-                feedback_type="Teaching",
-                rating=5,
-                message="Case study approach helped bridge theoretical accounting standards with real corporate balance sheets. Highly recommend!",
-                status="Reviewed",
-                created_at=datetime.utcnow()
-            )
+        samples = [
+            ("Alex Morgan", "CS2023001", "Computer Science", "Data Structures & Algorithms", "Teaching", 5, "Professor explained complex graph algorithms with clear visualization and interactive coding examples. Outstanding class!", "Reviewed", "Discussed in faculty review meeting. Kudos passed to instructor."),
+            ("Sophia Chen", "ECE2023042", "Electrical Engineering", "Digital Signal Processing", "Facilities", 2, "Lab equipment in room 302 needs recalibration. Oscilloscopes occasionally freeze during signal sampling experiments.", "Pending", None),
+            ("Marcus Vance", "ME2023018", "Mechanical Engineering", "Thermodynamics II", "Curriculum", 4, "Syllabus is very comprehensive, but adding a practical project on renewable thermal energy systems would make it even better.", "Reviewed", "Curriculum committee notified for next syllabus revision."),
+            ("Emma Watson", "CS2023089", "Computer Science", "Database Management Systems", "Teaching", 5, "Great hands-on SQL workshops! The practical exercises on query optimization were immensely helpful.", "Pending", None),
+            ("David Miller", "CE2023005", "Civil Engineering", "Structural Mechanics", "Other", 2, "Course pace was extremely fast before midterms, and slide decks were uploaded very late prior to examinations.", "Pending", None),
+            ("Priya Patel", "BUS2023011", "Business Administration", "Financial Accounting", "Teaching", 5, "Case study approach helped bridge theoretical accounting standards with real corporate balance sheets. Highly recommend!", "Reviewed", "Positive feedback logged into instructor portfolio.")
         ]
-        db.session.bulk_save_objects(sample_entries)
+        
+        sample_objects = []
+        for idx, s in enumerate(samples):
+            sent, prio = analyze_sentiment_and_priority(s[6], s[5])
+            fb = Feedback(
+                student_name=s[0],
+                roll_number=s[1],
+                department=s[2],
+                course_name=s[3],
+                feedback_type=s[4],
+                rating=s[5],
+                message=s[6],
+                sentiment=sent,
+                priority=prio,
+                status=s[7],
+                resolution_notes=s[8],
+                created_at=datetime.utcnow() - timedelta(days=6-idx)
+            )
+            sample_objects.append(fb)
+
+        db.session.bulk_save_objects(sample_objects)
         db.session.commit()
 
 with app.app_context():
@@ -170,11 +165,11 @@ with app.app_context():
         db.session.rollback()
         print("Data seeding note:", e)
 
-# Routes
+# API Endpoints
 
 @app.route('/api/health', methods=['GET'])
 def health_check():
-    return jsonify({'status': 'healthy', 'service': 'Student Feedback API'}), 200
+    return jsonify({'status': 'healthy', 'service': 'Student Feedback Enterprise API'}), 200
 
 @app.route('/api/login', methods=['POST'])
 def login():
@@ -228,7 +223,7 @@ def submit_feedback():
     if not course_name:
         errors.append('Course/Subject name is required.')
     if not feedback_type:
-        errors.append('Feedback type is required.')
+        errors.append('Feedback category is required.')
     if rating is None or not isinstance(rating, int) or rating < 1 or rating > 5:
         errors.append('Rating must be an integer between 1 and 5.')
     if not message or len(message) < 5:
@@ -236,6 +231,8 @@ def submit_feedback():
 
     if errors:
         return jsonify({'error': 'Validation failed', 'details': errors}), 400
+
+    sentiment, priority = analyze_sentiment_and_priority(message, rating)
 
     try:
         new_feedback = Feedback(
@@ -246,6 +243,8 @@ def submit_feedback():
             feedback_type=feedback_type,
             rating=rating,
             message=message,
+            sentiment=sentiment,
+            priority=priority,
             status='Pending',
             created_at=datetime.utcnow()
         )
@@ -265,7 +264,7 @@ def submit_feedback():
 def list_feedback():
     query = Feedback.query
 
-    # Search filter (matches student_name, roll_number, course_name, or message)
+    # Search filter
     q = request.args.get('q', '').strip()
     if q:
         search_pattern = f"%{q}%"
@@ -281,7 +280,7 @@ def list_feedback():
     if dept and dept != 'all':
         query = query.filter(Feedback.department == dept)
 
-    # Feedback Type filter
+    # Category filter
     fb_type = request.args.get('feedback_type', '').strip()
     if fb_type and fb_type != 'all':
         query = query.filter(Feedback.feedback_type == fb_type)
@@ -299,6 +298,16 @@ def list_feedback():
     if status and status != 'all':
         query = query.filter(Feedback.status == status)
 
+    # Sentiment filter
+    sentiment = request.args.get('sentiment', '').strip()
+    if sentiment and sentiment != 'all':
+        query = query.filter(Feedback.sentiment == sentiment)
+
+    # Priority filter
+    priority = request.args.get('priority', '').strip()
+    if priority and priority != 'all':
+        query = query.filter(Feedback.priority == priority)
+
     # Sort
     sort_by = request.args.get('sort_by', 'created_at')
     order = request.args.get('order', 'desc')
@@ -307,6 +316,8 @@ def list_feedback():
         column = Feedback.rating
     elif sort_by == 'student_name':
         column = Feedback.student_name
+    elif sort_by == 'priority':
+        column = Feedback.priority
     else:
         column = Feedback.created_at
 
@@ -343,12 +354,67 @@ def update_feedback_status(feedback_id):
         return jsonify({'error': 'Status must be "Reviewed" or "Pending"'}), 400
 
     item.status = new_status
+    if 'resolution_notes' in data:
+        item.resolution_notes = data['resolution_notes'].strip()
+
     db.session.commit()
 
     return jsonify({
         'message': f'Feedback marked as {new_status}',
         'feedback': item.to_dict()
     }), 200
+
+@app.route('/api/feedback/<int:feedback_id>/resolve', methods=['PUT'])
+@admin_required
+def resolve_feedback(feedback_id):
+    item = Feedback.query.get(feedback_id)
+    if not item:
+        return jsonify({'error': 'Feedback not found'}), 404
+
+    data = request.get_json() or {}
+    notes = data.get('resolution_notes', '').strip()
+
+    item.status = 'Reviewed'
+    item.resolution_notes = notes
+    db.session.commit()
+
+    return jsonify({
+        'message': 'Resolution logged and feedback marked as Reviewed',
+        'feedback': item.to_dict()
+    }), 200
+
+@app.route('/api/feedback/bulk-update', methods=['POST'])
+@admin_required
+def bulk_update_feedback():
+    data = request.get_json() or {}
+    action = data.get('action') # 'mark_reviewed', 'mark_pending', 'delete'
+    ids = data.get('ids', [])
+
+    if not ids or not isinstance(ids, list):
+        return jsonify({'error': 'No valid feedback IDs provided'}), 400
+
+    items = Feedback.query.filter(Feedback.id.in_(ids)).all()
+    if not items:
+        return jsonify({'error': 'No matching feedback items found'}), 404
+
+    count = len(items)
+    if action == 'mark_reviewed':
+        for item in items:
+            item.status = 'Reviewed'
+        msg = f'{count} items marked as Reviewed'
+    elif action == 'mark_pending':
+        for item in items:
+            item.status = 'Pending'
+        msg = f'{count} items marked as Pending'
+    elif action == 'delete':
+        for item in items:
+            db.session.delete(item)
+        msg = f'{count} items deleted successfully'
+    else:
+        return jsonify({'error': 'Invalid action'}), 400
+
+    db.session.commit()
+    return jsonify({'message': msg, 'count': count}), 200
 
 @app.route('/api/feedback/<int:feedback_id>', methods=['DELETE'])
 @admin_required
@@ -376,14 +442,16 @@ def get_stats():
             'overall_avg_rating': 0,
             'by_department': [],
             'by_type': [],
-            'rating_distribution': {'1': 0, '2': 0, '3': 0, '4': 0, '5': 0}
+            'rating_distribution': {'1': 0, '2': 0, '3': 0, '4': 0, '5': 0},
+            'sentiment_breakdown': {'Positive': 0, 'Neutral': 0, 'Negative': 0},
+            'priority_breakdown': {'High': 0, 'Medium': 0, 'Low': 0}
         }), 200
 
     reviewed_count = sum(1 for f in all_feedback if f.status == 'Reviewed')
     pending_count = total_count - reviewed_count
     overall_avg_rating = round(sum(f.rating for f in all_feedback) / total_count, 2)
 
-    # Department breakdown
+    # Department breakdown & Grade
     dept_map = {}
     for f in all_feedback:
         if f.department not in dept_map:
@@ -394,16 +462,23 @@ def get_stats():
     by_department = []
     for dept, data in dept_map.items():
         avg = round(sum(data['ratings']) / len(data['ratings']), 2)
+        # Letter Grade calculation
+        if avg >= 4.5: grade = 'A+'
+        elif avg >= 4.0: grade = 'A'
+        elif avg >= 3.5: grade = 'B+'
+        elif avg >= 3.0: grade = 'B'
+        else: grade = 'C'
+
         by_department.append({
             'department': dept,
             'count': data['count'],
-            'avg_rating': avg
+            'avg_rating': avg,
+            'grade': grade
         })
 
-    # Sort departments by count desc
     by_department.sort(key=lambda x: x['count'], reverse=True)
 
-    # Feedback type breakdown
+    # Category breakdown
     type_map = {}
     for f in all_feedback:
         type_map[f.feedback_type] = type_map.get(f.feedback_type, 0) + 1
@@ -416,6 +491,18 @@ def get_stats():
     for f in all_feedback:
         rating_dist[str(f.rating)] = rating_dist.get(str(f.rating), 0) + 1
 
+    # Sentiment Breakdown
+    sentiment_dist = {'Positive': 0, 'Neutral': 0, 'Negative': 0}
+    for f in all_feedback:
+        s = f.sentiment or 'Neutral'
+        sentiment_dist[s] = sentiment_dist.get(s, 0) + 1
+
+    # Priority Breakdown
+    priority_dist = {'High': 0, 'Medium': 0, 'Low': 0}
+    for f in all_feedback:
+        p = f.priority or 'Medium'
+        priority_dist[p] = priority_dist.get(p, 0) + 1
+
     return jsonify({
         'total_count': total_count,
         'reviewed_count': reviewed_count,
@@ -423,7 +510,9 @@ def get_stats():
         'overall_avg_rating': overall_avg_rating,
         'by_department': by_department,
         'by_type': by_type,
-        'rating_distribution': rating_dist
+        'rating_distribution': rating_dist,
+        'sentiment_breakdown': sentiment_dist,
+        'priority_breakdown': priority_dist
     }), 200
 
 if __name__ == '__main__':
