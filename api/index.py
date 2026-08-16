@@ -16,7 +16,7 @@ CORS(app)
 # Environment Configurations
 SECRET_KEY = os.environ.get('SECRET_KEY', 'default-feedback-secret-key-2026')
 ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME', 'admin')
-ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'admin123')
+ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'AcademiaAdmin2026!')
 
 app.config['SECRET_KEY'] = SECRET_KEY
 

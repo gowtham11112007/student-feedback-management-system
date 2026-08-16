@@ -31,6 +31,12 @@
   <main class="main-content">
     <div class="container">
       
+      <!-- Prototype System Notice Banner -->
+      <div style="background: var(--warning-bg); border: 1px solid var(--warning); color: #b45309; padding: 12px 18px; border-radius: var(--radius-md); font-size: 0.85rem; font-weight: 600; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+        <span>⚠️ <strong>Prototype Notice:</strong> This application is an academic demonstration project. Data changes are logged locally for evaluation.</span>
+        <span style="font-size: 0.78rem; background: rgba(180, 83, 9, 0.12); padding: 4px 10px; border-radius: 12px; font-weight: 700;">PROTOTYPE VERSION</span>
+      </div>
+
       <!-- Top Title & Action Bar -->
       <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 16px;">
         <div>
@@ -258,17 +264,17 @@
         <form id="loginForm" novalidate>
           <div class="form-group" style="margin-bottom: 16px;">
             <label for="admin_username" class="form-label">Username</label>
-            <input type="text" id="admin_username" class="form-control" placeholder="admin" required value="admin">
+            <input type="text" id="admin_username" class="form-control" placeholder="Enter admin username" required>
           </div>
 
           <div class="form-group" style="margin-bottom: 20px;">
             <label for="admin_password" class="form-label">Password</label>
-            <input type="password" id="admin_password" class="form-control" placeholder="admin123" required value="admin123">
+            <input type="password" id="admin_password" class="form-control" placeholder="Enter admin password" required>
           </div>
 
           <div style="background: var(--primary-light); padding: 12px; border-radius: var(--radius-md); font-size: 0.78rem; color: var(--primary); margin-bottom: 20px; border: 1px solid var(--primary-border);">
-            💡 <strong>Default Demo Credentials:</strong><br>
-            Username: <code>admin</code> | Password: <code>admin123</code>
+            ⚠️ <strong>Academic Prototype Credentials:</strong><br>
+            Username: <code>admin</code> | Password: <code>AcademiaAdmin2026!</code>
           </div>
 
           <button type="submit" id="loginSubmitBtn" class="btn btn-primary" style="width: 100%;">
